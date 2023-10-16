@@ -5,8 +5,11 @@ import java.net.*;
 
 public class Client {
     public static void main(String[] args) {
+        
+        Ruta ruta = new Ruta();
+        
         try {
-            Socket socket = new Socket("192.168.20.68", 8080); // Reemplaza "ip_del_servidor" por la IP del servidor
+            Socket socket = new Socket(ruta.pedirIP(), 8080); // Reemplaza "ip_del_servidor" por la IP del servidor
 
             // Configurar la entrada y la salida
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
