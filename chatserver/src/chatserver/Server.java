@@ -5,7 +5,6 @@ import java.net.*;
 
 public class Server {
     public static void main(String[] args) {
-        
         try {
             ServerSocket serverSocket = new ServerSocket(8080);
             System.out.println("Esperando una conexión...");
@@ -13,35 +12,47 @@ public class Server {
             Socket clientSocket = serverSocket.accept();
             System.out.println("Cliente conectado.");
 
-            // Configurar la entrada y la salida
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
 
-            String inputLine;
-            String outputLine;
-
-            while (true) {
-                inputLine = consoleInput.readLine();
-                out.println(inputLine);
-
-                if (inputLine.equalsIgnoreCase("bye")) {
-                    break;
+            Thread readThread = new Thread(() -> {
+                try {
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        System.out.println("Cliente: " + inputLine);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+            });
 
-                outputLine = in.readLine();
-                System.out.println("Cliente: " + outputLine);
-            }
+            Thread writeThread = new Thread(() -> {
+                try {
+                    String outputLine;
+                    while ((outputLine = consoleInput.readLine()) != null) {
+                        out.println(outputLine);
+                        if (outputLine.equalsIgnoreCase("bye")) {
+                            break;
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
 
-            // Cierre de recursos
+            readThread.start();
+            writeThread.start();
+
+            readThread.join();
+            writeThread.join();
+
             in.close();
             out.close();
             clientSocket.close();
             serverSocket.close();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 }
-
