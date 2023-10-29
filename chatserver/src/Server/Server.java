@@ -5,6 +5,7 @@ import java.awt.*;
 import java.io.*;
 import java.net.*;
 import Message.MessagePackage;
+import java.util.*;
 
 public class Server {
     
@@ -52,6 +53,7 @@ class FrameServer extends JFrame implements Runnable {
             ServerSocket server = new ServerSocket(7770);
             MessagePackage data = new MessagePackage();
             String nickname, ip, message;
+            ArrayList<String> ipArray = new ArrayList();
             
             while(true) {
                 
@@ -66,19 +68,51 @@ class FrameServer extends JFrame implements Runnable {
                 ip = data.getIp();
                 message = data.getMessage();
                 
-                textArea.append("\n"+nickname+" (Para:" + ip + "): "+message);
+                if (!message.equalsIgnoreCase("Online")) {
                 
-                //Socket Output
-                Socket socketOut = new Socket(ip,7770);
-                
-                ObjectOutputStream outputStream = new ObjectOutputStream(socketOut.getOutputStream());
-                outputStream.writeObject(data);
-                outputStream.close();
-                
-                //Closing Sockets
-                socketIn.close();
-                socketOut.close();
-                
+                    textArea.append("\n"+nickname+" (Para:" + ip + "): "+message);
+
+                    //Socket Output
+                    Socket socketOut = new Socket(ip,7770);
+
+                    ObjectOutputStream outputStream = new ObjectOutputStream(socketOut.getOutputStream());
+                    outputStream.writeObject(data);
+                    outputStream.close();
+
+                    //Closing Sockets
+                    socketIn.close();
+                    socketOut.close();
+                    
+                } else {
+                    
+                    //Detect Online
+                    String remote;
+                    InetAddress address = socketIn.getInetAddress();
+                    remote = address.getHostAddress();
+                    
+                    textArea.append("\nAhora online: "+remote);
+                    
+                    ipArray.add(remote);
+                    
+                    data.setIpArray(ipArray);
+                    
+                    for (String i:ipArray) {
+                        
+                        textArea.append("\nArray: "+remote);
+                    
+                        //Socket Output
+                        Socket socketOut = new Socket(i,7770);
+
+                        ObjectOutputStream outputStream = new ObjectOutputStream(socketOut.getOutputStream());
+                        outputStream.writeObject(data);
+                        outputStream.close();
+
+                        //Closing Sockets
+                        socketIn.close();
+                        socketOut.close();
+                        
+                    }
+                }
             }
             
         } 
